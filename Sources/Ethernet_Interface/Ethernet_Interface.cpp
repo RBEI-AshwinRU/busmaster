@@ -794,7 +794,9 @@ HRESULT LoadCustomProtocolDll(string strDllPath)
 	if (sg_hDll == NULL)
 	{
 		DWORD dError =  GetLastError();
-		AfxMessageBox("Error loading custom dll. Error code %ld", dError);
+		char cError[100];
+		sprintf(cError,  "Error loading custom dll. Error code %ld", dError);
+		AfxMessageBox(cError);
 		return S_FALSE;
 	}
 	else
