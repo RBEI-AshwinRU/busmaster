@@ -1407,7 +1407,7 @@ BEGIN
 		 POPUP "&Message Window"
 		 BEGIN
 			MENUITEM "&Activate",                   ID_SHOWMESSAGEWINDOW_ETHERNET, CHECKED
-			MENUITEM "&Enable Filters",             IDM_FILTER_MSGETHERNETOFF, CHECKED
+			//MENUITEM "&Enable Filters",             IDM_FILTER_MSGETHERNETOFF, CHECKED
    //         MENUITEM SEPARATOR
 			//MENUITEM "&Configure",                  ID_CONFIGURE_MESSAGEDISPLAY_ETH, GRAYED
             MENUITEM SEPARATOR
