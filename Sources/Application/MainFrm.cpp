@@ -20429,12 +20429,15 @@ void CMainFrame::vProcessKeyPress(MSG* pMsg)
             BOOL bConnected = FALSE;
             BOOL bConnectedFlexRay = FALSE;
             BOOL bConnectedLIN = FALSE;
+			BOOL bConnectedEthernet = FALSE;
             // Get the current status of Connected/Disconnected state
             bConnected  = pouFlag->nGetFlagStatus(CONNECTED);
             // Get the current status of Connected/Disconnected state for FlexRay
             bConnectedFlexRay  = pouFlag->nGetFlagStatus(FLEX_CONNECTED);
 
             bConnectedLIN  = pouFlag->nGetFlagStatus(LIN_CONNECTED);
+
+			bConnectedEthernet = pouFlag->nGetFlagStatus(ETHERNET_CONNECTED);
             //Procees the key "F2" and "ESC"
             if (pMsg->wParam == VK_F2)
             {
@@ -20505,6 +20508,20 @@ void CMainFrame::vProcessKeyPress(MSG* pMsg)
                 if( m_shLINDriverId != DAL_NONE && bConnectedLIN == TRUE )
                 {
                     OnLINConnect();
+                }
+            }
+			else if (pMsg->wParam == VK_F5)
+            {
+                if( m_shEthernetDriverId != DAL_NONE && bConnectedEthernet == FALSE )
+                {
+                    OnEthernetConnect();
+                }
+            }
+            else if (pMsg->wParam == VK_F9)
+            {
+                if( m_shEthernetDriverId != DAL_NONE && bConnectedEthernet == TRUE )
+                {
+                    OnEthernetConnect();
                 }
             }
         }
