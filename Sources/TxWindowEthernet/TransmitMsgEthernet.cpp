@@ -108,7 +108,9 @@ CTransmitMsgEthernet::CTransmitMsgEthernet()
 	m_bIsDataSetByCode			= false;
 	m_bIsRawSetByCode			= false;
 	m_pBaseTxAppProtocol		= NULL;
-
+	m_CurrentSelectionIndex		= -1;
+	m_omEditFrameData.SetParent(this);
+	m_omEditRawFrame.SetParent(this);
     vInitialiseDataBytes();
 }
 
@@ -399,7 +401,9 @@ void CTransmitMsgEthernet::OnBtnClickedAddnew()
 	strcpy((char*)pEFrameData->m_ouEthernetMessage.m_ucData, "");
 	
 	string strRaw = "FF FF FF FF FF FF 00 00 00 00 00 00 ";
+	m_bIsRawSetByCode = true;    //Set this check else the previous selected row will be reset
 	m_omEditRawFrame.SetWindowTextA(strRaw.c_str());
+	
 	CTxEthernetDataStore::ouGetTxEthernetDataStoreObj().nInsertMessage(*pEFrameData);
 	nAddMessageToList(*pEFrameData);
 }
@@ -1086,29 +1090,31 @@ void CTransmitMsgEthernet::OnEnChangeEditData()
 		m_bIsDataSetByCode = false;
 		return;
 	}
-	string strData = "", strRaw = "" ;
-	char chData[1500];
+	string *pstrData = new string, strRaw = "" ;
+	
 	int nDataLenth = m_omEditFrameData.GetWindowTextLengthA();
-	m_omEditFrameData.GetWindowTextA(chData, 1500);
-	strData = chData;
+	char *pchData = new char[nDataLenth];
+	m_omEditFrameData.GetWindowTextA(pchData, 1500);
+	*pstrData = pchData;
 
-	if(strData.length() == 0)
+	if(pstrData->length() == 0)
 	{
 		return;
 	}
 	//char chRaw[1540];
-	m_omEditRawFrame.GetWindowTextA(chData, m_omEditRawFrame.GetWindowTextLengthA());
-	strRaw = chData;
+	m_omEditRawFrame.GetWindowTextA(pchData, m_omEditRawFrame.GetWindowTextLengthA());
+	strRaw = pchData;
 
 	if(strRaw.length() < 37)
 	{
 		return;
 	}
-	strRaw.replace(strRaw.begin() + 36, strRaw.end(), strData);
+	strRaw.replace(strRaw.begin() + 36, strRaw.end(), *pstrData);
 	m_bIsRawSetByCode = true;
 	m_omEditRawFrame.SetWindowTextA(strRaw.c_str());
 
-	vUpdateSelMsgDetails(eDataBytes, m_omHeaderList.GetSelectionMark());
+	vUpdateSelMsgDetails(eDataBytes, m_CurrentSelectionIndex);
+
 }
 
 void CTransmitMsgEthernet::OnEnChangeEditRaw()
@@ -1137,12 +1143,12 @@ void CTransmitMsgEthernet::OnEnChangeEditRaw()
 		if (strSrcMAC[i] == ' ')
 			strSrcMAC[i] = ':';
 	}
-	m_omHeaderList.SetItemText(m_omHeaderList.GetSelectionMark(), def_COLUMN_DEST_MAC,strDestMac.c_str());
-	m_omHeaderList.SetItemText(m_omHeaderList.GetSelectionMark(), def_COLUMN_SRC_MAC,strSrcMAC.c_str());
+	m_omHeaderList.SetItemText(m_CurrentSelectionIndex, def_COLUMN_DEST_MAC,strDestMac.c_str());
+	m_omHeaderList.SetItemText(m_CurrentSelectionIndex, def_COLUMN_SRC_MAC,strSrcMAC.c_str());
 
-	vUpdateSelMsgDetails(eSrcMAC, m_omHeaderList.GetSelectionMark());
+	vUpdateSelMsgDetails(eSrcMAC, m_CurrentSelectionIndex);
 
-	vUpdateSelMsgDetails(eDestMAC, m_omHeaderList.GetSelectionMark());
+	vUpdateSelMsgDetails(eDestMAC, m_CurrentSelectionIndex);
 
 	if(strRaw.length() < 37)
 	{
@@ -1161,7 +1167,7 @@ void CTransmitMsgEthernet::OnEnChangeEditRaw()
 	
 	m_bIsDataSetByCode = true;
 	m_omEditFrameData.SetWindowTextA(strData.c_str());
-	vUpdateSelMsgDetails(eDataBytes, m_omHeaderList.GetSelectionMark());
+	vUpdateSelMsgDetails(eDataBytes,m_CurrentSelectionIndex);
 	//char chRaw[1540];
 	
 }
@@ -1215,7 +1221,7 @@ void CTransmitMsgEthernet::OnItemchangedLstcMsgDetails( NMHDR* pNMHDR, LRESULT* 
 {
     NM_LISTVIEW* pNMListView = (NM_LISTVIEW*)pNMHDR;
 
-
+	m_CurrentSelectionIndex = pNMListView->iItem;
     // Selected & Focused
     if( pNMListView->uNewState & (LVIS_FOCUSED | LVIS_SELECTED) )
     {
@@ -1225,6 +1231,7 @@ void CTransmitMsgEthernet::OnItemchangedLstcMsgDetails( NMHDR* pNMHDR, LRESULT* 
         {
             ETHERNET_FRAME_DATA objEthernetFrame = vGetMsgDetails(pNMListView->iItem);
             nUpdateMessageDetails(objEthernetFrame);
+			m_CurrentSelectionIndex = pNMListView->iItem;
         }
     }
 
@@ -1302,8 +1309,9 @@ INT CTransmitMsgEthernet::nUpdateMessageDetails(ETHERNET_FRAME_DATA& ouEthernetD
 		strText += " ";
 		}
 
-	m_omEditFrameData.SetWindowTextA(strText.c_str());
 	m_bIsDataSetByCode = true;
+	m_omEditFrameData.SetWindowTextA(strText.c_str());
+	
 
 	string strDestMAC = "", strSrcMAC = "", strRAWFrame = "";
 	char chSrcMAC[12], chDestMAC[12], chTempSrc[19], chTempDest[19];

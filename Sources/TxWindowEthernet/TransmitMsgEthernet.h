@@ -179,6 +179,7 @@ private:
     int								m_nSelDataColIndex;
 	FRAME_STRUCT					m_ouCurrentMsg;
 	CBase_TxEAppLayerProtocol*		m_pBaseTxAppProtocol;
+	int								m_CurrentSelectionIndex;
 
     void DeleteAllMsgListColumns();
     void vRefreshTxMsgWindow();
